@@ -1,0 +1,32 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+
+SMS_SCRIPT="/root/sms_wifi_manager.py"
+PID_FILE="/var/run/smswifi.pid"
+
+start() {
+    echo "Starting SMS WiFi manager..."
+    if [ -f "$PID_FILE" ]; then
+        echo "Already running?"
+        exit 1
+    fi
+    nohup python3 $SMS_SCRIPT > /var/log/smswifi.log 2>&1 &
+    echo $! > "$PID_FILE"
+}
+
+stop() {
+    echo "Stopping SMS WiFi manager..."
+    if [ -f "$PID_FILE" ]; then
+        kill "$(cat "$PID_FILE")" && rm -f "$PID_FILE"
+    else
+        echo "No PID file found"
+    fi
+}
+
+restart() {
+    stop
+    start
+}
+
